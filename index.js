@@ -24,7 +24,7 @@ app.get("/rest/1/:bitAPI/crm.lead.add.json", (req, res) => {
   }
   parameters["FIELDS"]["UF_CRM_1687526938"] = ddd;
   const fields = { FIELDS: parameters["FIELDS"] };
-  const paramString = qs.stringify(fields, { indices: false }); // Convert parameters to a query string without array indices
+  const paramString = qs.stringify(fields, { indices: true }); 
   const bitAPI = req.params.bitAPI;
 
   const bitrixCall =
@@ -55,8 +55,3 @@ app.get("/rest/1/:bitAPI/crm.lead.add.json", (req, res) => {
 app.listen(appAPIport, () => {
   console.log(`API is running on port ${appAPIport}`);
 });
-/*
-
-
-
-    */
