@@ -58,7 +58,7 @@ app.get("/rest/1/:bitAPI/crm.lead.add.json", (req, res) => {
     });
 });
 
-app.get("/wp/add/user/:name/:email/:cpf", (req, res) => {
+app.all("/wp/add/user/:name/:email/:cpf", (req, res) => {
   console.log(req.params);
 
   let username = req.params.cpf.replace(/\D/g, "");
