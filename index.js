@@ -76,7 +76,7 @@ app.all("/wp/add/user/:name/:email/:cpf", (req, res) => {
   // Request options
   const options = {
     hostname: wpApiURL,
-    path: wpApiFOLDER+"/wp-json/wp/v2/users",
+    path: wpApiFOLDER + "/wp-json/wp/v2/users",
     method: "POST",
     headers: {
       Authorization:
@@ -100,6 +100,7 @@ app.all("/wp/add/user/:name/:email/:cpf", (req, res) => {
     // Process response
     response.on("end", () => {
       console.log(requestData);
+      console.log(responseBody);
       res.json(responseBody);
     });
   });
