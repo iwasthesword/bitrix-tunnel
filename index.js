@@ -5,6 +5,11 @@ const basicAuth = require("express-basic-auth");
 require("dotenv").config();
 const appAPIport = process.env.API_PORT;
 const bitrixApiURL = process.env.BITRIX_API_URL;
+const wpApiURL = process.env.WORDPRESS_API_URL;
+const wpApiFOLDER = process.env.WORDPRESS_API_FOLDER;
+const wpApiUSER = process.env.WP_API_USERNAME;
+const wpApiSECRET = process.env.WP_API_SECRET;
+
 const app = express();
 
 app.use(
@@ -51,6 +56,64 @@ app.get("/rest/1/:bitAPI/crm.lead.add.json", (req, res) => {
     .on("error", (error) => {
       res.send("Error making the GET request:", error);
     });
+});
+
+app.get("/wp/add/user/:name/:email/:cpf", (req, res) => {
+  console.log(req.params);
+
+  let username = req.params.cpf.replace(/\D/g, "");
+  let name = req.params.name;
+  let email = req.params.email;
+  let password = username.substring(0, 6);
+  const requestData = JSON.stringify({
+    username: username,
+    name: name,
+    first_name: name,
+    email: email,
+    password: password,
+  });
+
+  // Request options
+  const options = {
+    hostname: wpApiURL,
+    path: wpApiFOLDER+"/wp-json/wp/v2/users",
+    method: "POST",
+    headers: {
+      Authorization:
+        "Basic " +
+        Buffer.from(wpApiUSER + ":" + wpApiSECRET).toString("base64"),
+      "Content-Type": "application/json",
+      "Content-Length": requestData.length,
+    },
+    rejectUnauthorized: false,
+  };
+
+  // Create the request
+  const request = https.request(options, (response) => {
+    let responseBody = "";
+
+    // Concatenate response chunks
+    response.on("data", (chunk) => {
+      responseBody += chunk;
+    });
+
+    // Process response
+    response.on("end", () => {
+      console.log(requestData);
+      res.json(responseBody);
+    });
+  });
+
+  // Handle errors
+  request.on("error", (error) => {
+    console.error("Error:", error);
+  });
+
+  // Send the request data
+  request.write(requestData);
+
+  // End the request
+  request.end();
 });
 
 app.listen(appAPIport, () => {
