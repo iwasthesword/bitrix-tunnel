@@ -71,6 +71,8 @@ app.all("/wp/add/user/:name/:email/:cpf", (req, res) => {
     first_name: name,
     email: email,
     password: password,
+  }).replace(/[\u007F-\uFFFF]/g, function (chr) {
+    return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
   });
 
   // Request options
