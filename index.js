@@ -1,6 +1,7 @@
 const express = require("express");
 const qs = require("qs");
 const https = require("https");
+const http = require("http");
 const basicAuth = require("express-basic-auth");
 require("dotenv").config();
 const appAPIport = process.env.API_PORT;
@@ -9,6 +10,8 @@ const wpApiURL = process.env.WORDPRESS_API_URL;
 const wpApiFOLDER = process.env.WORDPRESS_API_FOLDER;
 const wpApiUSER = process.env.WP_API_USERNAME;
 const wpApiSECRET = process.env.WP_API_SECRET;
+const msgApiURL = process.env.MESSENGER_API_URL;
+const msgNO = process.env.MESSENGER_API_NUMBER;
 
 const app = express();
 
@@ -101,8 +104,25 @@ app.all("/wp/add/user/:name/:email/:cpf", (req, res) => {
 
     // Process response
     response.on("end", () => {
+      let json = JSON.parse(responseBody);
       console.log(requestData);
       console.log(responseBody);
+      if (json.hasOwnProperty("code")) {
+        message(
+          msgNO,
+          "*Erro* tentando adicionar usuario:\\n" +
+            json.message +
+            "\\n\\n*Nome*: " +
+            name +
+            "\\n*DOC*: " +
+            username
+        );
+      } else {
+        message(
+          msgNO,
+          "Usuario adicionado!\\n*Nome*: " + name + "\\n*DOC*: " + username
+        );
+      }
       res.json(responseBody);
     });
   });
@@ -122,3 +142,13 @@ app.all("/wp/add/user/:name/:email/:cpf", (req, res) => {
 app.listen(appAPIport, () => {
   console.log(`API is running on port ${appAPIport}`);
 });
+
+function message(phone, message) {
+  http
+    .get(msgApiURL + "?number=" + phone + "&message=" + message, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => console.log(data));
+    })
+    .on("error", (error) => console.error(error));
+}
