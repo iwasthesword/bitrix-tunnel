@@ -61,21 +61,23 @@ app.get("/rest/1/:bitAPI/crm.lead.add.json", (req, res) => {
     });
 });
 
-app.all("/wp/add/user/:name/:email/:cpf", (req, res) => {
+app.all("/wp/add/user/:name/:email/:cpf/:phone", (req, res) => {
   console.log(req.params);
 
   let username = req.params.cpf.replace(/\D/g, "");
   let name = req.params.name;
   let email = req.params.email;
-  let password = username.substring(0, 6);
+  let password = username.slice(-6);
+  let phone = req.params.phone.replace(/\D/g, "");
   const requestData = JSON.stringify({
     username: username,
     name: name,
     first_name: name,
     email: email,
     password: password,
+    description: phone,
   }).replace(/[\u007F-\uFFFF]/g, function (chr) {
-    return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
+    return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
   });
 
   // Request options
@@ -119,8 +121,11 @@ app.all("/wp/add/user/:name/:email/:cpf", (req, res) => {
         );
       } else {
         message(
-          msgNO,
-          "Usuario adicionado!\\n*Nome*: " + name + "\\n*DOC*: " + username
+          phone,
+          "A Interlaser / Predileta está sempre em busca de ferramentas para deixar seus clientes cada vez mais independentes em relação ao sucesso do seu negócio. Por isso estamos lhe enviando um acesso a nossa mais nova plataforma de conteúdos.\\nO que seria essa plataforma?\\nÉ um ambiente on-line, repleto de vídeos/dicas/ receitas com as dúvidas mais frequentes que vocês, nossos clientes têm quando recebem seu equipamento:\\n- Montagem da máquina;\\n- Como operar a sua masseira;\\n- Receitas com nosso Cheffs oficiais;\\n- Além, de dicas da assistência técnica\\n\\nSegue seu login e senha para ir tendo uma familiaridade com seu equipamento enquanto aguarda a entrega pela transportadora:\\n\\n\\nhttps://ead.interlasermaquinas.com.br/\\n\\nLogin: " +
+            username +
+            "\\nSenha: " +
+            password
         );
       }
       res.json(responseBody);
@@ -143,12 +148,26 @@ app.listen(appAPIport, () => {
   console.log(`API is running on port ${appAPIport}`);
 });
 
-function message(phone, message) {
+function message(phone, msg) {
   http
-    .get(msgApiURL + "?number=" + phone + "&message=" + message, (res) => {
+    .get(msgApiURL + "?number=" + phone + "&message=" + msg, (res) => {
       let data = "";
       res.on("data", (chunk) => (data += chunk));
-      res.on("end", () => console.log(data));
+      res.on("end", () => {
+        let obj = JSON.parse(data);
+        console.log(data);
+        if (obj.error) {
+          message(
+            msgNO,
+            "Erro ao mandar mensagem para o numero: " +
+              phone +
+              "\\nMensagem: " +
+              msg
+          );
+        } else {
+          console.log(data);
+        }
+      });
     })
     .on("error", (error) => console.error(error));
 }
