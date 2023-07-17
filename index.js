@@ -117,7 +117,7 @@ app.all("/wp/add/user/", (req, res) => {
         if (json.hasOwnProperty("code")) {
           message(
             msgNO,
-            "*Erro* tentando adicionar usuario (ID #" +
+            "*Erro* tentando adicionar usuario (ID " +
               dealID +
               "):\\n" +
               json.message
@@ -146,6 +146,7 @@ app.all("/wp/add/user/", (req, res) => {
     // End the request
     request.end();
   } else {
+    console.log(req.query);
     let campos = "";
     if (!name) campos += "Nome,";
     if (!username) campos += "CPF/CNPJ,";
@@ -153,7 +154,7 @@ app.all("/wp/add/user/", (req, res) => {
     if (!phone) campos += "Telefone,";
     message(
       msgNO,
-      "*Erro* tentando adicionar usuario:\\nHá campos faltando do contato (ID #" +
+      "*Erro* tentando adicionar usuario:\\nHá campos faltando do contato (ID " +
         dealID +
         "\\n\\n*Campos*: " +
         campos
