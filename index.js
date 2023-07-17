@@ -156,7 +156,7 @@ app.all("/wp/add/user/", (req, res) => {
       msgNO,
       "*Erro* tentando adicionar usuario:\\nHá campos faltando do contato (ID " +
         dealID +
-        "\\n\\n*Campos*: " +
+        ")\\n\\n*Campos*: " +
         campos
     );
     res.json({ error: "Há campos faltando do contato. Campos: " + campos });
