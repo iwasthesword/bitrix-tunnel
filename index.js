@@ -61,87 +61,104 @@ app.get("/rest/1/:bitAPI/crm.lead.add.json", (req, res) => {
     });
 });
 
-app.all("/wp/add/user/:name/:email/:cpf/:phone", (req, res) => {
-  console.log(req.params);
+app.all("/wp/add/user/", (req, res) => {
+  let username = req.query.doc;
+  let name = req.query.name;
+  let email = req.query.email;
+  let password = "";
+  let phone = req.query.phone;
 
-  let username = req.params.cpf.replace(/\D/g, "");
-  let name = req.params.name;
-  let email = req.params.email;
-  let password = username.slice(-6);
-  let phone = req.params.phone.replace(/\D/g, "");
-  const requestData = JSON.stringify({
-    username: username,
-    name: name,
-    first_name: name,
-    email: email,
-    password: password,
-    description: phone,
-  }).replace(/[\u007F-\uFFFF]/g, function (chr) {
-    return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
-  });
+  if (username && name && email && phone) {
+    username = username.replace(/\D/g, "");
+    phone = phone.replace(/\D/g, "");
+    password = username.slice(-6);
 
-  // Request options
-  const options = {
-    hostname: wpApiURL,
-    path: wpApiFOLDER + "/wp-json/wp/v2/users",
-    method: "POST",
-    headers: {
-      Authorization:
-        "Basic " +
-        Buffer.from(wpApiUSER + ":" + wpApiSECRET).toString("base64"),
-      "Content-Type": "application/json",
-      "Content-Length": requestData.length,
-    },
-    rejectUnauthorized: false,
-  };
-
-  // Create the request
-  const request = https.request(options, (response) => {
-    let responseBody = "";
-
-    // Concatenate response chunks
-    response.on("data", (chunk) => {
-      responseBody += chunk;
+    const requestData = JSON.stringify({
+      username: username,
+      name: name,
+      first_name: name,
+      email: email,
+      password: password,
+      description: phone,
+    }).replace(/[\u007F-\uFFFF]/g, function (chr) {
+      return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
     });
 
-    // Process response
-    response.on("end", () => {
-      let json = JSON.parse(responseBody);
-      console.log(requestData);
-      console.log(responseBody);
-      if (json.hasOwnProperty("code")) {
-        message(
-          msgNO,
-          "*Erro* tentando adicionar usuario:\\n" +
-            json.message +
-            "\\n\\n*Nome*: " +
-            name +
-            "\\n*DOC*: " +
-            username
-        );
-      } else {
-        message(
-          phone,
-          "A Interlaser / Predileta está sempre em busca de ferramentas para deixar seus clientes cada vez mais independentes em relação ao sucesso do seu negócio. Por isso estamos lhe enviando um acesso a nossa mais nova plataforma de conteúdos.\\nO que seria essa plataforma?\\nÉ um ambiente on-line, repleto de vídeos/dicas/ receitas com as dúvidas mais frequentes que vocês, nossos clientes têm quando recebem seu equipamento:\\n- Montagem da máquina;\\n- Como operar a sua masseira;\\n- Receitas com nosso Cheffs oficiais;\\n- Além, de dicas da assistência técnica\\n\\nSegue seu login e senha para ir tendo uma familiaridade com seu equipamento enquanto aguarda a entrega pela transportadora:\\n\\n\\nhttps://ead.interlasermaquinas.com.br/\\n\\nLogin: " +
-            username +
-            "\\nSenha: " +
-            password
-        );
-      }
-      res.json(responseBody);
+    // Request options
+    const options = {
+      hostname: wpApiURL,
+      path: wpApiFOLDER + "/wp-json/wp/v2/users",
+      method: "POST",
+      headers: {
+        Authorization:
+          "Basic " +
+          Buffer.from(wpApiUSER + ":" + wpApiSECRET).toString("base64"),
+        "Content-Type": "application/json",
+        "Content-Length": requestData.length,
+      },
+      rejectUnauthorized: false,
+    };
+
+    // Create the request
+    const request = https.request(options, (response) => {
+      let responseBody = "";
+
+      // Concatenate response chunks
+      response.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+
+      // Process response
+      response.on("end", () => {
+        let json = JSON.parse(responseBody);
+        console.log(requestData);
+        console.log(responseBody);
+        if (json.hasOwnProperty("code")) {
+          message(
+            msgNO,
+            "*Erro* tentando adicionar usuario:\\n" +
+              json.message +
+              "\\n\\n*Nome*: " +
+              name +
+              "\\n*DOC*: " +
+              username
+          );
+        } else {
+          message(
+            phone,
+            "A Interlaser / Predileta está sempre em busca de ferramentas para deixar seus clientes cada vez mais independentes em relação ao sucesso do seu negócio. Por isso estamos lhe enviando um acesso a nossa mais nova plataforma de conteúdos.\\nO que seria essa plataforma?\\nÉ um ambiente on-line, repleto de vídeos/dicas/ receitas com as dúvidas mais frequentes que vocês, nossos clientes têm quando recebem seu equipamento:\\n- Montagem da máquina;\\n- Como operar a sua masseira;\\n- Receitas com nosso Cheffs oficiais;\\n- Além, de dicas da assistência técnica\\n\\nSegue seu login e senha para ir tendo uma familiaridade com seu equipamento enquanto aguarda a entrega pela transportadora:\\n\\n\\nhttps://ead.interlasermaquinas.com.br/\\n\\nLogin: " +
+              username +
+              "\\nSenha: " +
+              password
+          );
+        }
+        res.json(responseBody);
+      });
     });
-  });
 
-  // Handle errors
-  request.on("error", (error) => {
-    console.error("Error:", error);
-  });
+    // Handle errors
+    request.on("error", (error) => {
+      console.error("Error:", error);
+    });
 
-  // Send the request data
-  request.write(requestData);
+    // Send the request data
+    request.write(requestData);
 
-  // End the request
-  request.end();
+    // End the request
+    request.end();
+  } else {
+    let campos = "";
+    if (!name) campos += "Nome,";
+    if (!username) campos += "CPF/CNPJ,";
+    if (!email) campos += "E-mail,";
+    if (!phone) campos += "Telefone,";
+    message(
+      msgNO,
+      "*Erro* tentando adicionar usuario:\\nHá campos faltando do contato\\n\\n*Campos*: " +
+        campos
+    );
+    res.json({ error: "Há campos faltando do contato. Campos: " + campos });
+  }
 });
 
 app.listen(appAPIport, () => {
