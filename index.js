@@ -130,6 +130,17 @@ app.all("/wp/add/user/", (req, res) => {
               "\\nSenha: " +
               password
           );
+          if (phone.substring(0, 2) !== "55") {
+            message(
+              msgNO,
+              "Usuario internacional adicionado. Confere?\\nNome: " +
+                name +
+                "\\nTelefone: " +
+                phone +
+                "\\nID do Negocio: " +
+                dealID
+            );
+          }
         }
         res.json(responseBody);
       });
