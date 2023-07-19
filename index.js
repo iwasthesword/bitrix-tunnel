@@ -74,6 +74,10 @@ app.all("/wp/add/user/", (req, res) => {
     phone = phone.replace(/\D/g, "");
     password = username.slice(-6);
 
+    if (phone.substring(0, 2) !== "55") {
+      phone = "55" + phone;
+    }
+
     const requestData = JSON.stringify({
       username: username,
       name: name,
@@ -130,17 +134,6 @@ app.all("/wp/add/user/", (req, res) => {
               "\\nSenha: " +
               password
           );
-          if (phone.substring(0, 2) !== "55") {
-            message(
-              msgNO,
-              "Usuario internacional adicionado. Confere?\\nNome: " +
-                name +
-                "\\nTelefone: " +
-                phone +
-                "\\nID do Negocio: " +
-                dealID
-            );
-          }
         }
         res.json(responseBody);
       });
