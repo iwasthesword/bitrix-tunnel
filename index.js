@@ -6,6 +6,7 @@ const basicAuth = require("express-basic-auth");
 require("dotenv").config();
 const appAPIport = process.env.API_PORT;
 const bitrixApiURL = process.env.BITRIX_API_URL;
+const bitrixApiKey = process.env.BITRIX_API_KEY;
 const wpApiURL = process.env.WORDPRESS_API_URL;
 const wpApiFOLDER = process.env.WORDPRESS_API_FOLDER;
 const wpApiUSER = process.env.WP_API_USERNAME;
@@ -59,6 +60,13 @@ app.get("/rest/1/:bitAPI/crm.lead.add.json", (req, res) => {
     .on("error", (error) => {
       res.send("Error making the GET request:", error);
     });
+});
+
+app.all("/bitrix/add/comment", (req, res) => {
+  let id = req.query.id;
+  let comment = req.query.comment;
+
+  res.json(add_deal_comment(id, comment));
 });
 
 app.all("/wp/add/user/", (req, res) => {
@@ -134,6 +142,13 @@ app.all("/wp/add/user/", (req, res) => {
               "\\nSenha: " +
               password
           );
+          add_deal_comment(
+            dealID,
+            "Conta criada no EAD:\nUsuario: " +
+              username +
+              "\nSenha: " +
+              password
+          );
         }
         res.json(responseBody);
       });
@@ -193,4 +208,45 @@ function message(phone, msg) {
       });
     })
     .on("error", (error) => console.error(error));
+}
+
+function add_deal_comment(id, comment) {
+  const data = JSON.stringify({
+    fields: {
+      ENTITY_ID: id,
+      ENTITY_TYPE: "deal",
+      COMMENT: comment,
+    },
+  });
+
+  const requestOptions = {
+    hostname: bitrixApiURL, // Replace with the target hostname
+    path: "/rest/1/" + bitrixApiKey + "/crm.timeline.comment.add", // Replace with the target API endpoint path
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": Buffer.byteLength(data),
+    },
+    body: data, // Pass the JSON body directly in requestOptions
+  };
+
+  const req = https.request(requestOptions, (res) => {
+    //console.log(`Status Code: ${res.statusCode}`);
+
+    let responseData = "";
+
+    res.on("data", (chunk) => {
+      responseData += chunk;
+    });
+
+    res.on("end", () => {
+      //console.log("Response:", responseData);
+    });
+  });
+
+  req.on("error", (error) => {
+    console.error("Bitrix comment add error:", error);
+  });
+
+  req.end(requestOptions.body); // Send the body with the request
 }
