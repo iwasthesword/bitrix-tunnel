@@ -137,10 +137,36 @@ app.all("/wp/add/user/", (req, res) => {
         } else {
           message(
             phone,
-            "A Interlaser / Predileta está sempre em busca de ferramentas para deixar seus clientes cada vez mais independentes em relação ao sucesso do seu negócio. Por isso estamos lhe enviando um acesso a nossa mais nova plataforma de conteúdos.\\nO que seria essa plataforma?\\nÉ um ambiente on-line, repleto de vídeos/dicas/ receitas com as dúvidas mais frequentes que vocês, nossos clientes têm quando recebem seu equipamento:\\n- Montagem da máquina;\\n- Como operar a sua masseira;\\n- Receitas com nosso Cheffs oficiais;\\n- Além, de dicas da assistência técnica\\n\\nSegue seu login e senha para ir tendo uma familiaridade com seu equipamento enquanto aguarda a entrega pela transportadora:\\n\\n\\nhttps://ead.interlasermaquinas.com.br/\\n\\nLogin: " +
-              username +
-              "\\nSenha: " +
-              password
+            `Olá, cliente! \\n
+\\n
+🎉 Parabéns pela sua compra! \\n
+\\n
+A Interlaser e Predileta, marcas do Grupo Seven, estão sempre à procura de maneiras para tornar sua jornada de sucesso mais fácil e bem-sucedida.\\n
+\\n
+E agora temos uma novidade incrível para você:\\n
+\\n
+Apresentamos a nossa plataforma exclusiva repleta de conteúdos incríveis:\\n
+\\n
+📹 Vídeos práticos;\\n
+💡 Dicas essenciais;\\n
+🍽 Receitas deliciosas de chefes parceiros;\\n
+🔧 Dicas de assistência técnica;\\n
+❓ Respostas para as dúvidas mais frequentes;\\n
+\\n
+E muito mais.\\n
+\\n
+Tudo o que você precisa para aproveitar ao máximo seus equipamentos. Desde a montagem até as dicas de receitas incríveis.\\n
+\\n
+E para você começar imediatamente, aqui estão o seu usuario e senha.\\n
+*Usuario*: ${username}\\n
+*Senha*: ${password} \\n
+\\n
+Comece a explorar antes mesmo da entrega da sua máquina pela transportadora. \\n
+📦 🚚💨\\n
+\\n
+Tenha uma experiência incrível rumo ao sucesso com a Interlaser e Predileta!\\n
+\\n
+https://ead.interlasermaquinas.com.br/`
           );
           add_deal_comment(
             dealID,
