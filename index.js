@@ -16,6 +16,11 @@ const msgNO = process.env.MESSENGER_API_NUMBER;
 
 const app = express();
 
+function getRandomLetter() {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  return alphabet[Math.floor(Math.random() * alphabet.length)];
+}
+
 app.use(
   basicAuth({
     users: { [process.env.API_USERNAME]: process.env.API_PASSWORD },
@@ -81,6 +86,13 @@ app.all("/wp/add/user/", (req, res) => {
     username = username.replace(/\D/g, "");
     phone = phone.replace(/\D/g, "");
     password = username.slice(-6);
+    // Add a random letter at the beginning
+    password = getRandomLetter() + password;
+
+    // Add three random letters at the end
+    for (let i = 0; i < 3; i++) {
+      password += getRandomLetter();
+    }
 
     if (phone.substring(0, 2) !== "55") {
       phone = "55" + phone;
