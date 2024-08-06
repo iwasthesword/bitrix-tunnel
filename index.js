@@ -220,6 +220,128 @@ https://ead.interlasermaquinas.com.br/`
   }
 });
 
+app.all("/wp/change/password", (req, res) => {
+  let username = req.query.username;
+  let dealID = req.query.id;
+
+  if (username && dealID) {
+    let password = username.slice(-6);
+    // Add a random letter at the beginning
+    password = getRandomLetter() + password;
+
+    // Add three random letters at the end
+    for (let i = 0; i < 3; i++) {
+      password += getRandomLetter();
+    }
+
+    // First, get the user's ID by username
+    const getUserOptions = {
+      hostname: wpApiURL,
+      path: `${wpApiFOLDER}/wp-json/wp/v2/users?slug=${username}`,
+      method: "GET",
+      headers: {
+        Authorization:
+          "Basic " +
+          Buffer.from(wpApiUSER + ":" + wpApiSECRET).toString("base64"),
+        "Content-Type": "application/json",
+      },
+      rejectUnauthorized: false,
+    };
+
+    const getUserRequest = https.request(getUserOptions, (getUserResponse) => {
+      let getUserResponseBody = "";
+
+      getUserResponse.on("data", (chunk) => {
+        getUserResponseBody += chunk;
+      });
+
+      getUserResponse.on("end", () => {
+        let users = JSON.parse(getUserResponseBody);
+        if (users.length > 0) {
+          let userID = users[0].id;
+
+          const requestData = JSON.stringify({
+            password: password,
+          }).replace(/[\u007F-\uFFFF]/g, function (chr) {
+            return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4);
+          });
+
+          // Request options to update the password
+          const options = {
+            hostname: wpApiURL,
+            path: `${wpApiFOLDER}/wp-json/wp/v2/users/${userID}`,
+            method: "POST",
+            headers: {
+              Authorization:
+                "Basic " +
+                Buffer.from(wpApiUSER + ":" + wpApiSECRET).toString("base64"),
+              "Content-Type": "application/json",
+              "Content-Length": requestData.length,
+            },
+            rejectUnauthorized: false,
+          };
+
+          // Create the request to update the password
+          const request = https.request(options, (response) => {
+            let responseBody = "";
+
+            response.on("data", (chunk) => {
+              responseBody += chunk;
+            });
+
+            response.on("end", () => {
+              let json = JSON.parse(responseBody);
+              console.log(requestData);
+              console.log(responseBody);
+              if (json.hasOwnProperty("code")) {
+                res.json({
+                  error: `Error changing password for user ${username}: ${json.message}`,
+                });
+              } else {
+                add_deal_comment(
+                  dealID,
+                  `Conta atualizada no EAD:\nUsuario: ${username}\nSenha: ${password}`
+                );
+                res.json({
+                  success: `Password changed for user ${username}`,
+                  password: password
+                });
+              }
+            });
+          });
+
+          // Handle errors
+          request.on("error", (error) => {
+            console.error("Error:", error);
+          });
+
+          // Send the request data
+          request.write(requestData);
+
+          // End the request
+          request.end();
+        } else {
+          res.json({
+            error: `User ${username} not found.`,
+          });
+        }
+      });
+    });
+
+    // Handle errors
+    getUserRequest.on("error", (error) => {
+      console.error("Error:", error);
+    });
+
+    // End the request
+    getUserRequest.end();
+  } else {
+    res.json({
+      error: "Username and deal ID are required.",
+    });
+  }
+});
+
 app.listen(appAPIport, () => {
   console.log(`API is running on port ${appAPIport}`);
 });
