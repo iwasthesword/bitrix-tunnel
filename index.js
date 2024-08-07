@@ -224,7 +224,7 @@ app.all("/wp/change/password", (req, res) => {
   let username = req.query.username;
   let dealID = req.query.id;
 
-  if (username && dealID) {
+  if (username) {
     let password = username.slice(-6);
     // Add a random letter at the beginning
     password = getRandomLetter() + password;
@@ -298,10 +298,12 @@ app.all("/wp/change/password", (req, res) => {
                   error: `Error changing password for user ${username}: ${json.message}`,
                 });
               } else {
-                add_deal_comment(
-                  dealID,
-                  `Conta atualizada no EAD:\nUsuario: ${username}\nSenha: ${password}`
-                );
+                if (dealID) {
+                  add_deal_comment(
+                    dealID,
+                    `Conta atualizada no EAD:\nUsuario: ${username}\nSenha: ${password}`
+                  );
+                }
                 res.json({
                   success: `Password changed for user ${username}`,
                   password: password
@@ -337,7 +339,7 @@ app.all("/wp/change/password", (req, res) => {
     getUserRequest.end();
   } else {
     res.json({
-      error: "Username and deal ID are required.",
+      error: "Username is required.",
     });
   }
 });
